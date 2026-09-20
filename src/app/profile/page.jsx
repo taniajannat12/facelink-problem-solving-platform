@@ -10,14 +10,12 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-slate-50">
 
-      {/* ================= PROFILE HEADER ================= */}
       <section className="bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-800 text-white">
 
         <div className="max-w-6xl mx-auto px-6 py-16">
 
           <div className="flex flex-col md:flex-row items-center md:items-end gap-7">
 
-            {/* Profile Image */}
             <div className="relative">
 
               <div className="w-32 h-32 rounded-full bg-white/20 backdrop-blur-md border-4 border-white/30 flex items-center justify-center text-5xl font-bold shadow-2xl">
@@ -29,7 +27,6 @@ export default function ProfilePage() {
             </div>
 
 
-            {/* User Info */}
             <div className="text-center md:text-left flex-1">
 
               <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
@@ -45,7 +42,7 @@ export default function ProfilePage() {
               </div>
 
               <h1 className="text-3xl md:text-4xl font-bold">
-                Tania Jannat
+                Tania
               </h1>
 
               <p className="text-blue-100 mt-2">
@@ -54,8 +51,6 @@ export default function ProfilePage() {
 
             </div>
 
-
-            {/* Edit Button */}
             <button className="px-6 py-3 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-blue-50 transition shadow-lg">
               Edit Profile
             </button>
@@ -67,7 +62,6 @@ export default function ProfilePage() {
       </section>
 
 
-      {/* ================= ROLE SWITCH ================= */}
       <section className="max-w-6xl mx-auto px-6 -mt-6 relative z-10">
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-2 flex max-w-md mx-auto">
@@ -99,15 +93,13 @@ export default function ProfilePage() {
       </section>
 
 
-      {/* ================= CONTENT ================= */}
       <section className="max-w-6xl mx-auto px-6 py-12">
 
         <div className="grid lg:grid-cols-3 gap-7">
 
-          {/* ================= LEFT COLUMN ================= */}
           <div className="space-y-7">
 
-            {/* About */}
+        
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
 
               <h2 className="text-xl font-bold text-slate-900">
@@ -122,8 +114,6 @@ export default function ProfilePage() {
 
             </div>
 
-
-            {/* Contact */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
 
               <h2 className="text-xl font-bold text-slate-900">
@@ -167,13 +157,11 @@ export default function ProfilePage() {
           </div>
 
 
-          {/* ================= RIGHT COLUMN ================= */}
           <div className="lg:col-span-2 space-y-7">
 
-            {/* ================= SOLVER PROFILE ================= */}
             {role === "solver" && (
               <>
-                {/* Stats */}
+               
                 <div className="grid sm:grid-cols-3 gap-4">
 
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center hover:-translate-y-1 transition">
@@ -214,8 +202,6 @@ export default function ProfilePage() {
 
                 </div>
 
-
-                {/* Skills */}
                 <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
 
                   <div className="flex justify-between items-center">
@@ -260,7 +246,6 @@ export default function ProfilePage() {
                 </div>
 
 
-                {/* Recent Problems */}
                 <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
 
                   <h2 className="text-xl font-bold text-slate-900">
@@ -310,8 +295,6 @@ export default function ProfilePage() {
 
                 </div>
 
-
-                {/* Rating */}
                 <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-3xl p-7 text-white">
 
                   <p className="text-purple-100 text-sm">
@@ -342,11 +325,8 @@ export default function ProfilePage() {
             )}
 
 
-            {/* ================= SEEKER PROFILE ================= */}
             {role === "seeker" && (
               <>
-
-                {/* Stats */}
                 <div className="grid sm:grid-cols-3 gap-4">
 
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center hover:-translate-y-1 transition">
@@ -387,8 +367,6 @@ export default function ProfilePage() {
 
                 </div>
 
-
-                {/* Problem History */}
                 <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
 
                   <h2 className="text-xl font-bold text-slate-900">
@@ -453,8 +431,6 @@ export default function ProfilePage() {
 
                 </div>
 
-
-                {/* Solution Methods */}
                 <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
 
                   <h2 className="text-xl font-bold text-slate-900">

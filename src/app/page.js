@@ -7,10 +7,8 @@ export default function Home() {
   return (
     <main className="bg-slate-950 text-white overflow-hidden">
 
-      {/* ================= HERO SECTION ================= */}
       <section className="relative min-h-[90vh] flex items-center">
 
-        {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -top-20 -left-20 animate-pulse"></div>
 
@@ -21,7 +19,6 @@ export default function Home() {
 
         <div className="relative max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-16 items-center">
 
-          {/* Left */}
           <div className="animate-[fadeIn_1s_ease-out]">
 
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-sm mb-7">
@@ -65,7 +62,6 @@ export default function Home() {
 
           </div>
 
-          {/* Right - Animated Solution Card */}
           <div className="relative flex justify-center">
 
             <div className="absolute w-80 h-80 bg-blue-500/20 blur-3xl rounded-full animate-pulse"></div>
@@ -151,15 +147,13 @@ export default function Home() {
         </div>
       </section>
 
-
-      {/* ================= ABOUT US ================= */}
       <section className="relative py-28 bg-slate-900">
 
         <div className="max-w-7xl mx-auto px-6">
 
           <div className="grid lg:grid-cols-2 gap-16 items-center">
 
-            {/* About Text */}
+
             <div>
 
               <p className="text-blue-400 font-semibold uppercase tracking-widest text-sm">
@@ -216,7 +210,6 @@ export default function Home() {
             </div>
 
 
-            {/* About Visual */}
             <div className="relative">
 
               <div className="absolute inset-0 bg-blue-500/10 blur-3xl"></div>
@@ -282,7 +275,6 @@ export default function Home() {
       </section>
 
 
-      {/* ================= THREE SOLUTIONS ================= */}
       <section className="py-28 bg-slate-950">
 
         <div className="max-w-7xl mx-auto px-6">
@@ -310,7 +302,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6 mt-16">
 
-            {/* Card 1 */}
+  
             <div className="group p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500/40 hover:-translate-y-3 transition duration-500">
 
               <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition">
@@ -333,7 +325,6 @@ export default function Home() {
             </div>
 
 
-            {/* Card 2 */}
             <div className="group p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-purple-500/40 hover:-translate-y-3 transition duration-500">
 
               <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition">
@@ -356,7 +347,6 @@ export default function Home() {
             </div>
 
 
-            {/* Card 3 */}
             <div className="group p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-cyan-500/40 hover:-translate-y-3 transition duration-500">
 
               <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition">
@@ -383,8 +373,6 @@ export default function Home() {
         </div>
       </section>
 
-
-      {/* ================= HOW IT WORKS ================= */}
       <section className="py-28 bg-slate-900">
 
         <div className="max-w-7xl mx-auto px-6">
@@ -462,7 +450,6 @@ export default function Home() {
       </section>
 
 
-      {/* ================= REVIEWS ================= */}
       <section className="py-28 bg-slate-950">
 
         <div className="max-w-7xl mx-auto px-6">
@@ -488,19 +475,19 @@ export default function Home() {
 
             {[
               {
-                name: "Rahim Ahmed",
+                name: "Ron ",
                 role: "Problem Seeker",
                 review:
                   "Instead of searching through many different platforms, I can describe my problem and choose how I want to solve it."
               },
               {
-                name: "Sadia Jannat",
+                name: "Serin",
                 role: "Problem Solver",
                 review:
                   "The skill-based solver concept makes it easier to help people with problems that match my expertise."
               },
               {
-                name: "Tanim Hasan",
+                name: "Tanish",
                 role: "Student",
                 review:
                   "I really like the idea of having database solutions, human support and AI assistance in the same platform."
@@ -548,7 +535,6 @@ export default function Home() {
       </section>
 
 
-      {/* ================= FINAL CTA ================= */}
       <section className="relative py-28 overflow-hidden">
 
         <div className="absolute inset-0 bg-gradient-to-r from-blue-700/20 via-purple-700/20 to-cyan-700/20"></div>

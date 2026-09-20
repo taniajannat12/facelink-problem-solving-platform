@@ -41,7 +41,6 @@ export default function RegisterPage() {
 
         </div>
 
-        {/* Right Side */}
         <div className="p-7 sm:p-10">
 
           <div className="mb-8">
@@ -56,7 +55,6 @@ export default function RegisterPage() {
 
           <form className="space-y-5">
 
-            {/* Name */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Full Name
@@ -69,7 +67,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Email Address
@@ -82,7 +79,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Password
@@ -95,7 +91,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Role */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-3">
                 Choose your role
@@ -103,7 +98,6 @@ export default function RegisterPage() {
 
               <div className="grid grid-cols-2 gap-3">
 
-                {/* Seeker */}
                 <button
                   type="button"
                   onClick={() => setRole("seeker")}
@@ -124,7 +118,6 @@ export default function RegisterPage() {
                   </p>
                 </button>
 
-                {/* Solver */}
                 <button
                   type="button"
                   onClick={() => setRole("solver")}
@@ -147,8 +140,6 @@ export default function RegisterPage() {
 
               </div>
             </div>
-
-            {/* Solver Skills */}
             {role === "solver" && (
               <div className="animate-in fade-in duration-300">
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -167,7 +158,6 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Terms */}
             <div className="flex items-start gap-2">
               <input
                 type="checkbox"
@@ -180,7 +170,6 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            {/* Button */}
             <button
               type="submit"
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-md hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition"
@@ -190,7 +179,6 @@ export default function RegisterPage() {
 
           </form>
 
-          {/* Login */}
           <p className="text-center text-sm text-slate-500 mt-7">
             Already have an account?{" "}
             <Link

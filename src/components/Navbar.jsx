@@ -3,9 +3,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (path) => {
     if (path === "/") {
@@ -45,10 +47,10 @@ export default function Navbar() {
 
         <div className="h-20 flex items-center justify-between">
 
-          {/* ================= LOGO ================= */}
           <Link
             href="/"
             className="group flex items-center gap-2"
+            onClick={() => setMenuOpen(false)}
           >
 
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20 group-hover:scale-105 transition duration-300">
@@ -67,8 +69,6 @@ export default function Navbar() {
 
           </Link>
 
-
-          {/* ================= NAVIGATION ================= */}
           <div className="hidden md:flex items-center gap-1">
 
             {navItems.map((item) => {
@@ -93,7 +93,6 @@ export default function Navbar() {
 
                   {item.name}
 
-                  {/* Active underline */}
                   {active && (
                     <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-blue-600 rounded-full" />
                   )}
@@ -104,8 +103,6 @@ export default function Navbar() {
 
           </div>
 
-
-          {/* ================= LOGIN BUTTON ================= */}
           <Link
             href="/login"
             className="
@@ -127,19 +124,69 @@ export default function Navbar() {
             Login
           </Link>
 
-
-          {/* ================= MOBILE MENU ICON ================= */}
           <button
+            onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition"
           >
-            ☰
+            {menuOpen ? "✕" : "☰"}
           </button>
 
         </div>
+
+        {menuOpen && (
+          <div className="md:hidden pb-5">
+
+            <div className="flex flex-col gap-1 border-t border-slate-200 pt-3">
+
+              {navItems.map((item) => {
+
+                const active = isActive(item.href);
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`
+                      px-4 py-3 rounded-xl text-sm font-medium
+                      transition-all duration-300
+
+                      ${
+                        active
+                          ? "text-blue-600 bg-blue-50"
+                          : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                      }
+                    `}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                className="
+                  mt-2
+                  px-4 py-3
+                  rounded-xl
+                  bg-gradient-to-r from-blue-600 to-indigo-600
+                  text-white
+                  text-sm
+                  font-semibold
+                  text-center
+                "
+              >
+                Login
+              </Link>
+
+            </div>
+
+          </div>
+        )}
 
       </div>
 
     </nav>
   );
 }
-

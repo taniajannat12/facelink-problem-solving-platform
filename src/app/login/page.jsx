@@ -8,7 +8,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white rounded-3xl shadow-xl overflow-hidden">
 
-        {/* Left Side */}
+
         <div className="hidden md:flex bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white p-10 flex-col justify-between">
 
           <div>
@@ -37,8 +37,6 @@ export default function LoginPage() {
           </div>
 
         </div>
-
-        {/* Right Side */}
         <div className="p-7 sm:p-10 flex flex-col justify-center">
 
           <div className="mb-8">
@@ -53,7 +51,6 @@ export default function LoginPage() {
 
           <form className="space-y-5">
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Email Address
@@ -66,7 +63,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-semibold text-slate-700">
@@ -88,7 +84,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Remember */}
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -100,7 +95,6 @@ export default function LoginPage() {
               </span>
             </div>
 
-            {/* Login */}
             <button
               type="submit"
               className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-md hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition"
@@ -110,7 +104,6 @@ export default function LoginPage() {
 
           </form>
 
-          {/* Register */}
           <p className="text-center text-sm text-slate-500 mt-7">
             Don&apos;t have an account?{" "}
             <Link

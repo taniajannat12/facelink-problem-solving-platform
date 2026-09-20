@@ -7,12 +7,11 @@ export default function Footer() {
   return (
     <footer className="bg-slate-950 text-white border-t border-slate-800">
 
-      {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-6 py-16">
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
-          {/* ================= BRAND ================= */}
+
           <div className="lg:col-span-2">
 
             <Link
@@ -42,7 +41,6 @@ export default function Footer() {
 
             <div className="flex items-center gap-3 mt-6">
 
-              {/* Social Icons */}
               <a
                 href="#"
                 className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-blue-600 hover:border-blue-600 transition duration-300"
@@ -75,8 +73,6 @@ export default function Footer() {
 
           </div>
 
-
-          {/* ================= QUICK LINKS ================= */}
           <div>
 
             <h3 className="font-semibold text-lg">
@@ -124,8 +120,6 @@ export default function Footer() {
 
           </div>
 
-
-          {/* ================= SOLUTIONS ================= */}
           <div>
 
             <h3 className="font-semibold text-lg">
@@ -169,7 +163,6 @@ export default function Footer() {
         </div>
 
 
-        {/* ================= CTA ================= */}
         <div className="mt-14 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/10 flex flex-col md:flex-row items-center justify-between gap-6">
 
           <div>
@@ -192,7 +185,6 @@ export default function Footer() {
         </div>
 
 
-        {/* ================= BOTTOM ================= */}
         <div className="border-t border-slate-800 mt-12 pt-7 flex flex-col md:flex-row items-center justify-between gap-4">
 
           <p className="text-sm text-slate-500">
