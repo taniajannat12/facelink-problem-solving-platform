@@ -64,10 +64,10 @@ setMessage("");
 
 return ( <main className="min-h-screen bg-slate-100">
 
-```
+
   <div className="mx-auto max-w-5xl px-4 py-8">
 
-    {/* Back */}
+   
     <Link
       href="/solver/dashboard"
       className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-purple-600"
@@ -77,11 +77,9 @@ return ( <main className="min-h-screen bg-slate-100">
     </Link>
 
 
-    {/* Chat Container */}
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
 
 
-      {/* Header */}
       <div className="flex items-center justify-between border-b bg-white p-5">
 
         <div className="flex items-center gap-4">
@@ -119,7 +117,6 @@ return ( <main className="min-h-screen bg-slate-100">
       </div>
 
 
-      {/* Problem Banner */}
       <div className="border-b bg-purple-50 px-6 py-5">
 
         <div className="flex items-start gap-3">
@@ -153,7 +150,6 @@ return ( <main className="min-h-screen bg-slate-100">
       </div>
 
 
-      {/* Messages */}
       <div className="min-h-[500px] space-y-6 bg-slate-50 p-6">
 
         {messages.map((msg) => {
@@ -200,8 +196,6 @@ return ( <main className="min-h-screen bg-slate-100">
 
       </div>
 
-
-      {/* Input */}
       <div className="border-t bg-white p-4">
 
         <div className="flex items-center gap-3">
@@ -245,7 +239,6 @@ return ( <main className="min-h-screen bg-slate-100">
     </div>
 
 
-    {/* Solve Button */}
     <div className="mt-5 flex justify-end">
 
       <button className="flex items-center gap-2 rounded-xl bg-green-600 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-green-700">

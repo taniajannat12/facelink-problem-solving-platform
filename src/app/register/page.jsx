@@ -11,7 +11,6 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white rounded-3xl shadow-xl overflow-hidden">
 
-        {/* Left Side */}
         <div className="hidden md:flex bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white p-10 flex-col justify-between">
 
           <div>
