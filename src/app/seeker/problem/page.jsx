@@ -1,220 +1,349 @@
-
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  Bot,
+  Database,
+  MessageCircle,
+  Search,
+  Users,
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 export default function ProblemPage() {
   const [problem, setProblem] = useState("");
   const [selected, setSelected] = useState("");
+  const [selectedSolver, setSelectedSolver] = useState("");
 
   const solutions = [
     {
       id: "database",
-      icon: "📚",
       title: "Solution Database",
-      description: "Search verified solutions already stored in FaceLink.",
-      accent: "blue",
+      description:
+        "Find relevant solutions from the FaceLink knowledge base.",
+      accent: "indigo",
+      icon: <Database size={22} />,
     },
     {
       id: "human",
-      icon: "👨‍💻",
-      title: "Human Problem Solver",
-      description: "Connect with a skilled person who can solve your problem.",
-      accent: "purple",
+      title: "Human Solver",
+      description:
+        "Connect with a skilled person who can help solve your problem.",
+      accent: "violet",
+      icon: <Users size={22} />,
     },
     {
       id: "ai",
-      icon: "🤖",
-      title: "AI Chatbot",
-      description: "Discuss your problem with an AI assistant instantly.",
+      title: "AI Assistant",
+      description:
+        "Get instant guidance and suggestions for your problem.",
       accent: "cyan",
+      icon: <Bot size={22} />,
+    },
+  ];
+
+  const solvers = [
+    {
+      id: "1",
+      name: "Rahim Hasan",
+      role: "Full Stack Developer",
+      skills: "Next.js · React · Authentication",
+    },
+    {
+      id: "2",
+      name: "Arif Hasan",
+      role: "React Developer",
+      skills: "React · Next.js · Firebase",
+    },
+    {
+      id: "3",
+      name: "Nabil Ahmed",
+      role: "Backend Developer",
+      skills: "Node.js · MongoDB · JWT",
     },
   ];
 
   const accentClasses = {
-    blue: {
-      iconBg: "bg-blue-500/10",
-      border: "hover:border-blue-500/40",
-      borderSelected: "border-blue-500 bg-blue-500/10",
-      text: "text-blue-400",
+    indigo: {
+      icon: "bg-indigo-50 text-indigo-600",
+      selected: "border-indigo-400 bg-indigo-50/70",
+      hover: "hover:border-indigo-200 hover:bg-indigo-50/40",
     },
-    purple: {
-      iconBg: "bg-purple-500/10",
-      border: "hover:border-purple-500/40",
-      borderSelected: "border-purple-500 bg-purple-500/10",
-      text: "text-purple-400",
+    violet: {
+      icon: "bg-violet-50 text-violet-600",
+      selected: "border-violet-400 bg-violet-50/70",
+      hover: "hover:border-violet-200 hover:bg-violet-50/40",
     },
     cyan: {
-      iconBg: "bg-cyan-500/10",
-      border: "hover:border-cyan-500/40",
-      borderSelected: "border-cyan-500 bg-cyan-500/10",
-      text: "text-cyan-400",
+      icon: "bg-cyan-50 text-cyan-600",
+      selected: "border-cyan-400 bg-cyan-50/70",
+      hover: "hover:border-cyan-200 hover:bg-cyan-50/40",
     },
   };
 
+  const getContinueLink = () => {
+    if (selected === "database") {
+      return "/seeker/dashboard/database";
+    }
+
+    if (selected === "ai") {
+      return "/seeker/dashboard/ai";
+    }
+
+    return "#";
+  };
+
+  const selectedSolverData = solvers.find(
+    (solver) => solver.id === selectedSolver
+  );
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      
 
-      <section className="relative overflow-hidden">
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-indigo-600">
+                FaceLink Problem Center
+              </p>
 
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -top-20 -left-20"></div>
-          <div className="absolute w-96 h-96 bg-purple-600/20 rounded-full blur-3xl top-10 right-0"></div>
-        </div>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
+                What problem are you facing?
+              </h1>
 
-        <div className="relative max-w-5xl mx-auto px-6 py-20 text-center">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                Describe your problem and choose how you want to find a
+                solution.
+              </p>
+            </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-sm mb-7">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-            FaceLink Problem Center
+            <Link
+              href="/seeker/dashboard"
+              className="flex w-fit items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-indigo-600"
+            >
+              Dashboard
+              <ArrowRight size={15} />
+            </Link>
           </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-            What problem are you
-            <span className="text-blue-400"> facing?</span>
-          </h1>
-
-          <p className="text-slate-400 mt-5 max-w-xl mx-auto leading-7">
-            Describe your problem and choose the best way to solve it.
-          </p>
-
         </div>
-
       </section>
 
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <Search size={19} />
+              </div>
 
-      <section className="max-w-5xl mx-auto px-6 pb-20">
+              <div>
+                <h2 className="font-bold">Find a Solution</h2>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-7">
+                <p className="text-xs text-slate-400">
+                  Search by technology or topic
+                </p>
+              </div>
+            </div>
 
-          <label className="font-bold text-slate-100">
-            Search Problem / Technology
-          </label>
+            <div className="mt-5 flex gap-3">
+              <input
+                type="text"
+                placeholder="React, Next.js, MongoDB..."
+                className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+              />
 
-          <div className="mt-3 flex flex-col sm:flex-row gap-3">
-
-            <input
-              type="text"
-              placeholder="Search React, Next.js, MongoDB..."
-              className="flex-1 px-5 py-3 rounded-xl border border-white/10 bg-slate-900/60 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500/40"
-            />
-
-            <button className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition duration-300 hover:-translate-y-0.5 shadow-lg shadow-blue-600/20">
-              Search
-            </button>
-
+              <Link
+                href="/seeker/database"
+                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+              >
+                <Search size={16} />
+                Search
+              </Link>
+            </div>
           </div>
 
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <MessageCircle size={19} />
+              </div>
+
+              <div>
+                <h2 className="font-bold">Describe Your Problem</h2>
+
+                <p className="text-xs text-slate-400">
+                  Give enough details to get useful help
+                </p>
+              </div>
+            </div>
+
+            <textarea
+              value={problem}
+              onChange={(e) => setProblem(e.target.value.slice(0, 500))}
+              rows={5}
+              placeholder="Explain what you are trying to do, what happened, and any error you received..."
+              className="mt-5 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+            />
+
+            <div className="mt-2 flex justify-between text-xs text-slate-400">
+              <span>Clear details help others understand your problem.</span>
+              <span>{problem.length}/500</span>
+            </div>
+          </div>
         </div>
-
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-7 mt-6">
-
-          <label className="font-bold text-slate-100">
-            Describe Your Problem
-          </label>
-
-          <textarea
-            value={problem}
-            onChange={(e) => setProblem(e.target.value)}
-            rows={6}
-            placeholder="Explain your problem clearly..."
-            className="w-full mt-3 px-5 py-4 rounded-xl border border-white/10 bg-slate-900/60 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500/40 resize-none"
-          />
-
-          <p className="text-xs text-slate-500 mt-2">
-            The more details you provide, the easier it will be to find the
-            right solution.
-          </p>
-
-        </div>
-
 
         <div className="mt-10">
-
-          <h2 className="text-2xl font-bold text-slate-100">
-            Choose Your Solution
-          </h2>
-
-          <p className="text-slate-400 mt-2">
-            FaceLink gives you three ways to solve your problem.
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-500">
+            Solution Path
           </p>
 
+          <h2 className="mt-1 text-xl font-bold">
+            Choose How to Solve
+          </h2>
 
-          <div className="grid md:grid-cols-3 gap-5 mt-6">
+          <p className="mt-1 text-sm text-slate-500">
+            Select the option that best fits your problem.
+          </p>
 
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
             {solutions.map((solution) => {
               const accent = accentClasses[solution.accent];
               const isSelected = selected === solution.id;
 
               return (
-                <button
+                <div
                   key={solution.id}
-                  onClick={() => setSelected(solution.id)}
-                  className={`group text-left p-6 rounded-3xl border transition duration-300 hover:-translate-y-2 ${
+                  className={`rounded-2xl border transition duration-300 ${
                     isSelected
-                      ? accent.borderSelected
-                      : `border-white/10 bg-white/5 ${accent.border}`
+                      ? accent.selected
+                      : `border-slate-200 bg-white ${accent.hover}`
                   }`}
                 >
+                  <button
+                    onClick={() => {
+                      setSelected(solution.id);
 
-                  <div className={`w-14 h-14 rounded-2xl ${accent.iconBg} flex items-center justify-center text-3xl group-hover:scale-110 transition`}>
-                    {solution.icon}
-                  </div>
+                      if (solution.id !== "human") {
+                        setSelectedSolver("");
+                      }
+                    }}
+                    className="group w-full p-5 text-left"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div
+                        className={`flex h-11 w-11 items-center justify-center rounded-xl ${accent.icon} transition group-hover:scale-105`}
+                      >
+                        {solution.icon}
+                      </div>
 
-                  <h3 className="font-bold text-lg text-slate-100 mt-6">
-                    {solution.title}
-                  </h3>
+                      <div
+                        className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                          isSelected
+                            ? "border-indigo-500 bg-indigo-600 text-white"
+                            : "border-slate-300"
+                        }`}
+                      >
+                        {isSelected && (
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                          >
+                            <path d="m5 12 4 4L19 6" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
 
-                  <p className="text-sm text-slate-400 leading-6 mt-3">
-                    {solution.description}
-                  </p>
+                    <h3 className="mt-5 font-bold text-slate-800">
+                      {solution.title}
+                    </h3>
 
-                  <div className="mt-6">
-                    {isSelected ? (
-                      <span className={`${accent.text} font-semibold text-sm`}>
-                        ✓ Selected
-                      </span>
-                    ) : (
-                      <span className="text-slate-500 text-sm">
-                        Select this option →
-                      </span>
-                    )}
-                  </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      {solution.description}
+                    </p>
 
-                </button>
+                    <div className="mt-5 text-xs font-semibold text-indigo-600">
+                      {isSelected ? "Selected" : "Select option →"}
+                    </div>
+                  </button>
+
+                  {solution.id === "human" && isSelected && (
+                    <div className="px-5 pb-5">
+                      <div className="border-t border-violet-200 pt-4">
+                        <label className="text-xs font-semibold text-slate-600">
+                          Select a Solver
+                        </label>
+
+                        <select
+                          value={selectedSolver}
+                          onChange={(e) =>
+                            setSelectedSolver(e.target.value)
+                          }
+                          className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                        >
+                          <option value="">
+                            Choose a solver
+                          </option>
+
+                          {solvers.map((solver) => (
+                            <option key={solver.id} value={solver.id}>
+                              {solver.name} — {solver.role}
+                            </option>
+                          ))}
+                        </select>
+
+                        {selectedSolverData && (
+                          <div className="mt-3">
+                            <p className="text-sm font-semibold text-slate-800">
+                              {selectedSolverData.name}
+                            </p>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                              {selectedSolverData.skills}
+                            </p>
+
+                            <Link
+                              href="/seeker/chat"
+                              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700"
+                            >
+                              Start Chat
+                              <ArrowRight size={15} />
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
-
           </div>
-
         </div>
 
-        <div className="flex justify-end mt-8">
-
-          <Link
-            href={
-              selected === "ai"
-                ? "/seeker/chat"
-                : selected === "human"
-                ? "/seeker/chat"
-                : "/seeker/dashboard"
-            }
-            className={`px-7 py-3.5 rounded-xl font-semibold text-white transition duration-300 ${
-              selected
-                ? "bg-blue-600 hover:bg-blue-500 hover:-translate-y-0.5 shadow-lg shadow-blue-600/20"
-                : "bg-slate-800 text-slate-500 pointer-events-none"
-            }`}
-          >
-            Continue →
-          </Link>
-
-        </div>
-
+        {selected !== "human" && (
+          <div className="mt-8 flex justify-end">
+            <Link
+              href={getContinueLink()}
+              className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition ${
+                selected
+                  ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                  : "pointer-events-none bg-slate-200 text-slate-400"
+              }`}
+            >
+              Continue
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        )}
       </section>
-
     </main>
   );
 }
-
