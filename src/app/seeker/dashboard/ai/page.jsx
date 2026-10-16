@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { useState } from "react";
@@ -8,10 +10,10 @@ import {
   Send,
   UserRound,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 export default function AIChatPage() {
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [messages, setMessages] = useState([
     {
@@ -20,18 +22,58 @@ export default function AIChatPage() {
     },
   ]);
 
-  const sendMessage = () => {
-    if (!message.trim()) return;
+  const sendMessage = async () => {
+    if (!message.trim() || loading) return;
+
+    const userMessage = message.trim();
 
     setMessages((prev) => [
       ...prev,
-      {
-        type: "user",
-        text: message,
-      },
+      { type: "user", text: userMessage },
     ]);
 
     setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/ai-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: userMessage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "AI request failed");
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "ai",
+          text: data.reply || "Sorry, no response received.",
+        },
+      ]);
+    } catch (error) {
+      console.error("AI chat error:", error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "ai",
+          text:
+            error.message ||
+            "Sorry, something went wrong. Please try again.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -43,8 +85,6 @@ export default function AIChatPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
- 
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <Link
           href="/seeker/dashboard"
@@ -55,7 +95,6 @@ export default function AIChatPage() {
         </Link>
 
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden h-[calc(100vh-150px)] min-h-[600px] flex flex-col">
-          
           <div className="px-5 py-4 border-b border-slate-200 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
               <Bot size={20} />
@@ -66,7 +105,7 @@ export default function AIChatPage() {
                 AI Assistant
               </h1>
               <p className="text-xs text-emerald-600">
-                Online
+                {loading ? "Thinking..." : "Online"}
               </p>
             </div>
           </div>
@@ -88,7 +127,7 @@ export default function AIChatPage() {
                 )}
 
                 <div
-                  className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-6 ${
+                  className={`max-w-[75%] whitespace-pre-wrap break-words px-4 py-3 rounded-2xl text-sm leading-6 ${
                     msg.type === "user"
                       ? "bg-indigo-600 text-white rounded-tr-sm"
                       : "bg-slate-100 text-slate-700 rounded-tl-sm"
@@ -104,6 +143,18 @@ export default function AIChatPage() {
                 )}
               </div>
             ))}
+
+            {loading && (
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 shrink-0 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <Bot size={16} />
+                </div>
+
+                <div className="bg-slate-100 text-slate-500 px-4 py-3 rounded-2xl rounded-tl-sm text-sm">
+                  Thinking...
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="border-t border-slate-200 p-4">
@@ -119,15 +170,15 @@ export default function AIChatPage() {
 
               <button
                 onClick={sendMessage}
-                disabled={!message.trim()}
-                className="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 disabled:opacity-40 transition"
+                disabled={!message.trim() || loading}
+                className="w-11 h-11 shrink-0 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 disabled:opacity-40 transition"
               >
                 <Send size={18} />
               </button>
             </div>
 
             <p className="text-[11px] text-slate-400 text-center mt-2">
-              AI responses will be connected later.
+              FaceLink AI Assistant
             </p>
           </div>
         </div>
