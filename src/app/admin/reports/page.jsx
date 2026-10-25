@@ -2,8 +2,8 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import {
-  ArrowLeft,
   Users,
   BriefcaseBusiness,
   CheckCircle2,
@@ -11,67 +11,169 @@ import {
   TrendingUp,
   Star,
   Activity,
+  RefreshCw,
 } from "lucide-react";
 
-const monthlyUsers = [
-  { month: "May", users: 320 },
-  { month: "Jun", users: 450 },
-  { month: "Jul", users: 390 },
-  { month: "Aug", users: 580 },
-  { month: "Sep", users: 650 },
-  { month: "Oct", users: 720 },
-];
-
-const technologies = [
-  { name: "React", count: 86, percent: 86 },
-  { name: "Next.js", count: 72, percent: 72 },
-  { name: "MongoDB", count: 58, percent: 58 },
-  { name: "Firebase", count: 44, percent: 44 },
-  { name: "Tailwind CSS", count: 32, percent: 32 },
-];
-
-const topSolvers = [
-  { name: "Rahim Hasan", role: "Full Stack Developer", solved: 48, rating: 4.9 },
-  { name: "Arif Hasan", role: "React Developer", solved: 41, rating: 4.8 },
-  { name: "Nabil Ahmed", role: "Backend Developer", solved: 37, rating: 4.7 },
-];
+const API = "http://localhost:5000/api/admin/reports";
 
 export default function ReportsPage() {
-  const maxUsers = Math.max(...monthlyUsers.map((item) => item.users));
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchReports = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(API, { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to load reports.");
+      }
+
+      setReport(data.reports || data.data || data);
+    } catch (err) {
+      setError(err.message || "Could not connect to the backend.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  if (loading && !report) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="text-sm font-medium text-slate-500">
+          Loading reports...
+        </p>
+      </main>
+    );
+  }
+
+  if (error && !report) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+        <div className="rounded-2xl border border-red-200 bg-white p-6 text-center shadow-sm">
+          <p className="font-semibold text-red-600">{error}</p>
+          <button
+            type="button"
+            onClick={fetchReports}
+            disabled={loading}
+            className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            Try Again
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const summary = report?.summary || report?.stats || {};
+  const monthlyUsers = report?.monthlyUsers || [];
+  const technologies = report?.technologies || [];
+  const topSolvers = report?.topSolvers || [];
+  const problemStatus = report?.problemStatus || {};
+
+  const totalUsers = summary.totalUsers ?? 0;
+  const totalProblems = summary.totalProblems ?? 0;
+  const solved = problemStatus.solved ?? summary.solvedProblems ?? 0;
+  const inProgress = problemStatus.inProgress ?? 0;
+  const pending = problemStatus.pending ?? summary.pendingProblems ?? 0;
+
+  const maxUsers = Math.max(
+    1,
+    ...monthlyUsers.map((item) => Number(item.users) || 0)
+  );
+
+  const completionRate = totalProblems
+    ? Math.round((solved / totalProblems) * 100)
+    : 0;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-
-
-     
       <header className="border-b border-slate-200 bg-white px-4 py-5 sm:px-6 lg:px-10">
-        <div className="mx-auto max-w-7xl">
-          <Link
-            href="/admin"
-            className="mb-3 pb-10 inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-indigo-600"
-          >
-            
-          </Link>
+        <div className="mx-auto flex max-w-7xl items-start justify-between gap-4">
+          <div>
+            <Link
+              href="/admin"
+              className="mb-3 inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-indigo-600"
+            >
+              Back to Dashboard
+            </Link>
 
-          <h1 className="text-xl font-bold  sm:text-2xl">
-            Reports & Analytics
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Overview of FaceLink users, problems and solver performance.
-          </p>
+            <h1 className="text-xl pt-16 font-bold sm:text-2xl">
+              Reports & Analytics
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Overview of FaceLink users, problems and solver performance.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={fetchReports}
+            disabled={loading}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold transition hover:bg-slate-50 disabled:opacity-50"
+          >
+            <RefreshCw
+              size={14}
+              className={loading ? "animate-spin" : ""}
+            />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
         </div>
       </header>
 
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
-        {/* Summary cards */}
+        {error && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {error}
+            <button
+              type="button"
+              onClick={fetchReports}
+              className="ml-2 font-semibold underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard title="Total Users" value="1,248" note="+12.5% demo growth" icon={Users} />
-          <StatCard title="Total Problems" value="324" note="All submitted problems" icon={BriefcaseBusiness} />
-          <StatCard title="Problems Solved" value="253" note="78% demo completion" icon={CheckCircle2} />
-          <StatCard title="Pending Problems" value="47" note="Need attention" icon={Clock3} />
+          <StatCard
+            title="Total Users"
+            value={totalUsers}
+            note="Registered users"
+            icon={Users}
+          />
+          <StatCard
+            title="Total Problems"
+            value={totalProblems}
+            note="Submitted problems"
+            icon={BriefcaseBusiness}
+          />
+          <StatCard
+            title="Problems Solved"
+            value={solved}
+            note={`${completionRate}% completion rate`}
+            icon={CheckCircle2}
+          />
+          <StatCard
+            title="Pending Problems"
+            value={pending}
+            note="Awaiting solutions"
+            icon={Clock3}
+          />
         </section>
 
-        {/* User growth chart */}
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -80,36 +182,42 @@ export default function ReportsPage() {
                 Monthly user activity overview
               </p>
             </div>
+
             <span className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600">
               <TrendingUp size={14} className="mr-1 inline" />
-              Demo data
+              Backend data
             </span>
           </div>
 
-          <div className="mt-8 flex h-56 items-end justify-around gap-3 border-b border-slate-200 px-2">
-            {monthlyUsers.map((item) => (
-              <div
-                key={item.month}
-                className="flex h-full flex-1 flex-col items-center justify-end gap-2"
-              >
-                <span className="text-[10px] font-semibold text-slate-500 sm:text-xs">
-                  {item.users}
-                </span>
+          {monthlyUsers.length ? (
+            <div className="mt-8 flex h-56 items-end justify-around gap-3 border-b border-slate-200 px-2">
+              {monthlyUsers.map((item, index) => (
                 <div
-                  className="w-full max-w-14 rounded-t-lg bg-indigo-500 transition hover:bg-indigo-600"
-                  style={{ height: `${(item.users / maxUsers) * 75}%` }}
-                  title={`${item.month}: ${item.users} demo users`}
-                />
-                <span className="pb-2 text-xs text-slate-500">
-                  {item.month}
-                </span>
-              </div>
-            ))}
-          </div>
+                  key={`${item.month}-${index}`}
+                  className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2"
+                >
+                  <span className="text-[10px] font-semibold text-slate-500 sm:text-xs">
+                    {item.users}
+                  </span>
+                  <div
+                    className="w-full max-w-14 rounded-t-lg bg-indigo-500 transition hover:bg-indigo-600"
+                    style={{
+                      height: `${((Number(item.users) || 0) / maxUsers) * 75}%`,
+                    }}
+                    title={`${item.month}: ${item.users} users`}
+                  />
+                  <span className="pb-2 text-xs text-slate-500">
+                    {item.month}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No monthly user data available." />
+          )}
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Problem status */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="font-bold">Problem Status</h2>
             <p className="mt-1 text-xs text-slate-500">
@@ -117,9 +225,24 @@ export default function ReportsPage() {
             </p>
 
             <div className="mt-6 space-y-5">
-              <ProgressRow label="Solved" count={253} total={324} color="bg-emerald-500" />
-              <ProgressRow label="In Progress" count={24} total={324} color="bg-blue-500" />
-              <ProgressRow label="Pending" count={47} total={324} color="bg-amber-500" />
+              <ProgressRow
+                label="Solved"
+                count={solved}
+                total={totalProblems}
+                color="bg-emerald-500"
+              />
+              <ProgressRow
+                label="In Progress"
+                count={inProgress}
+                total={totalProblems}
+                color="bg-blue-500"
+              />
+              <ProgressRow
+                label="Pending"
+                count={pending}
+                total={totalProblems}
+                color="bg-amber-500"
+              />
             </div>
 
             <div className="mt-6 rounded-xl bg-slate-50 p-4">
@@ -128,44 +251,57 @@ export default function ReportsPage() {
                 <div>
                   <p className="text-sm font-semibold">Completion Rate</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Approximately 78% of demo problems are solved.
+                    {completionRate}% of submitted problems are solved.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Technology report */}
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="font-bold">Problems by Technology</h2>
             <p className="mt-1 text-xs text-slate-500">
               Most common problem categories
             </p>
 
-            <div className="mt-6 space-y-5">
-              {technologies.map((item) => (
-                <div key={item.name}>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="text-sm font-medium text-slate-700">
-                      {item.name}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-500">
-                      {item.count}
-                    </span>
+            {technologies.length ? (
+              <div className="mt-6 space-y-5">
+                {technologies.map((item, index) => (
+                  <div key={`${item.name}-${index}`}>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-slate-700">
+                        {item.name}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-500">
+                        {item.count}
+                      </span>
+                    </div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className="h-full rounded-full bg-indigo-500"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.max(
+                              0,
+                              Number(
+                                item.percent ??
+                                  (maxUsers ? (item.count / maxUsers) * 100 : 0)
+                              ) || 0
+                            )
+                          )}%`,
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className="h-full rounded-full bg-indigo-500"
-                      style={{ width: `${item.percent}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState message="No technology data available." />
+            )}
           </section>
         </div>
 
-        {/* Solver performance */}
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-100 p-5 sm:p-6">
             <h2 className="font-bold">Top Solver Performance</h2>
@@ -185,42 +321,56 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                {topSolvers.map((solver, index) => (
-                  <tr
-                    key={solver.name}
-                    className="border-t border-slate-100"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold">
-                          {index + 1}
+                {topSolvers.length ? (
+                  topSolvers.map((solver, index) => (
+                    <tr
+                      key={solver.id || solver._id || solver.name || index}
+                      className="border-t border-slate-100"
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-bold">
+                            {index + 1}
+                          </div>
+                          <span className="text-sm font-semibold">
+                            {solver.name || "Unknown Solver"}
+                          </span>
                         </div>
-                        <span className="text-sm font-semibold">
-                          {solver.name}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-slate-500">
+                        {solver.role || "Solver"}
+                      </td>
+                      <td className="px-5 py-4 text-sm font-semibold">
+                        {solver.solved ?? solver.solvedProblems ?? 0}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-1 text-sm font-semibold">
+                          <Star
+                            size={14}
+                            className="fill-amber-400 text-amber-400"
+                          />
+                          {solver.rating ?? "N/A"}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-slate-500">
-                      {solver.role}
-                    </td>
-                    <td className="px-5 py-4 text-sm font-semibold">
-                      {solver.solved}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-1 text-sm font-semibold">
-                        <Star size={14} className="fill-amber-400 text-amber-400" />
-                        {solver.rating}
-                      </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-5 py-8 text-center text-sm text-slate-400"
+                    >
+                      No solver performance data available.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         </section>
 
         <p className="text-center text-xs text-slate-400">
-          All figures on this page are sample data for frontend development.
+          Report figures are loaded from the backend API.
         </p>
       </div>
     </main>
@@ -246,7 +396,9 @@ function StatCard({ title, value, note, icon: Icon }) {
 }
 
 function ProgressRow({ label, count, total, color }) {
-  const percent = Math.round((count / total) * 100);
+  const percent = total
+    ? Math.min(100, Math.round((count / total) * 100))
+    : 0;
 
   return (
     <div>
@@ -263,5 +415,13 @@ function ProgressRow({ label, count, total, color }) {
         />
       </div>
     </div>
+  );
+}
+
+function EmptyState({ message }) {
+  return (
+    <p className="mt-6 rounded-xl bg-slate-50 p-5 text-sm text-slate-400">
+      {message}
+    </p>
   );
 }

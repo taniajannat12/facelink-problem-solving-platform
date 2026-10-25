@@ -1,271 +1,409 @@
+
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
-  CheckCircle2,
-  MoreVertical,
-  Paperclip,
   Send,
-  CircleUserRound,
+  Paperclip,
+  CheckCircle2,
+  Circle,
+  MessageSquare,
+  UserRound,
+  ShieldCheck,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
-export default function SolverChat() {
+const API_URL = "http://localhost:5000/api/chat";
+
+export default function ChatPage() {
+  const searchParams = useSearchParams();
+
+  const [role, setRole] = useState("solver");
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [isSolved, setIsSolved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: "seeker",
-      text: "Hello! I am having an authentication problem in my Next.js project.",
-      time: "10:32 PM",
-    },
-    {
-      id: 2,
-      sender: "solver",
-      text: "Sure! Please send me the error message and the relevant code.",
-      time: "10:33 PM",
-    },
-    {
-      id: 3,
-      sender: "seeker",
-      text: "I am getting a session error after login.",
-      time: "10:35 PM",
-    },
-    {
-      id: 4,
-      sender: "solver",
-      text: "Okay. It looks like the session configuration may be the issue. Please show me your auth configuration.",
-      time: "10:36 PM",
-    },
-  ]);
+  const conversationId =
+    searchParams.get("conversationId") ||
+    searchParams.get("problemId") ||
+    "problem123";
 
-  const handleSend = () => {
-    if (!message.trim()) return;
+  const problem = searchParams.get("problem") || "";
+  const solverId = searchParams.get("solverId") || "solver456";
+  const solverName = searchParams.get("solverName") || "Arif Hasan";
+  const seekerId = searchParams.get("seekerId") || "seeker123";
+  const seekerName = searchParams.get("seekerName") || "Rahim Hasan";
+  const problemTitle =
+    searchParams.get("title") || "Next.js Authentication Problem";
 
-    const newMessage = {
-      id: Date.now(),
-      sender: "solver",
-      text: message,
-      time: "Now",
-    };
+  const currentId = role === "solver" ? solverId : seekerId;
+  const currentName = role === "solver" ? solverName : seekerName;
 
-    setMessages((previous) => [...previous, newMessage]);
-    setMessage("");
-  };
+  const loadMessages = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+
+    try {
+      const response = await fetch(
+        `${API_URL}/${encodeURIComponent(conversationId)}/messages`,
+        { cache: "no-store" }
+      );
+
+      if (!response.ok) {
+        throw new Error("Could not load messages.");
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || "Could not load messages.");
+      }
+
+      setMessages(
+        (result.messages || []).map((item) => ({
+          id: item.id,
+          sender: item.senderRole || item.sender,
+          senderId: item.senderId,
+          name: item.senderName || item.name || "User",
+          text: item.text,
+          time: item.createdAt
+            ? new Date(item.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : item.time || "",
+        }))
+      );
+
+      setError("");
+    } catch {
+      setError(
+        "Backend-er sathe connect kora jacche na. Backend server check koro."
+      );
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  }, [conversationId]);
+
+  useEffect(() => {
+    loadMessages(true);
+
+    const intervalId = setInterval(() => {
+      loadMessages(false);
+    }, 2000);
+
+    return () => clearInterval(intervalId);
+  }, [loadMessages]);
+
+  async function handleSend(e) {
+    e.preventDefault();
+
+    const text = message.trim();
+
+    if (!text || isSolved || sending) return;
+
+    setSending(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${API_URL}/${encodeURIComponent(conversationId)}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            senderId: currentId,
+            senderRole: role,
+            senderName: currentName,
+            text,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Message send failed.");
+      }
+
+      setMessage("");
+      await loadMessages(false);
+    } catch (err) {
+      setError(
+        err.message || "Message send kora jayni. Backend check koro."
+      );
+    } finally {
+      setSending(false);
+    }
+  }
+
+  function handleSolved() {
+    setIsSolved((previous) => !previous);
+  }
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
-      
-
-      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
-        <div className="mb-5 flex items-center justify-between">
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link
-            href="/solver/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-indigo-600"
+            href={role === "solver" ? "/solver/dashboard" : "/seeker/dashboard"}
+            className="flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-blue-600"
           >
-            <ArrowLeft size={17} />
-            Back to Dashboard
+            <ArrowLeft size={18} />
+            Dashboard
           </Link>
 
-          <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 sm:flex">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            Active conversation
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-500">
+              View as
+            </span>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold outline-none focus:border-blue-500"
+              aria-label="Select chat role"
+            >
+              <option value="solver">Human Solver</option>
+              <option value="seeker">Seeker</option>
+            </select>
           </div>
         </div>
+      </header>
 
-        <div className="grid overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[300px_1fr]">
-          <aside className="hidden border-r border-slate-200 bg-slate-50 lg:block">
-            <div className="border-b border-slate-200 p-6">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-500">
-                Current Request
-              </p>
+      <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_300px]">
+        <section className="flex min-h-[75vh] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                <UserRound size={23} />
+              </div>
 
-              <h2 className="mt-3 text-lg font-bold text-slate-800">
-                Next.js authentication issue
-              </h2>
-
-              <p className="mt-2 text-xs leading-5 text-slate-500">
-                Authentication and session problem in a Next.js project.
-              </p>
-            </div>
-
-            <div className="p-6">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                Seeker
-              </p>
-
-              <div className="mt-4 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-bold text-white">
-                  SJ
-                </div>
-
-                <div>
-                  <p className="text-sm font-bold text-slate-800">
-                   Rahim
-                  </p>
-
-                  <p className="mt-0.5 text-xs text-emerald-500">
-                    Online now
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <h1 className="truncate font-bold text-slate-900">
+                  {role === "solver" ? seekerName : solverName}
+                </h1>
+                <p className="text-xs text-slate-500">
+                  {role === "solver" ? "Problem Seeker" : "Human Solver"}
+                </p>
               </div>
             </div>
 
-            <div className="mx-6 border-t border-slate-200" />
+            <span
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                isSolved
+                  ? "bg-green-100 text-green-700"
+                  : "bg-amber-100 text-amber-700"
+              }`}
+            >
+              {isSolved ? "Solved" : "In Progress"}
+            </span>
+          </div>
 
-            <div className="p-6">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                Topic
+          <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Problem
+            </p>
+            <h2 className="font-semibold text-slate-800">{problemTitle}</h2>
+
+            {problem && (
+              <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">
+                {problem}
               </p>
+            )}
+          </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-lg bg-indigo-50 px-3 py-1.5 text-[11px] font-semibold text-indigo-600">
-                  Next.js
-                </span>
-
-                <span className="rounded-lg bg-violet-50 px-3 py-1.5 text-[11px] font-semibold text-violet-600">
-                  Authentication
-                </span>
-
-                <span className="rounded-lg bg-cyan-50 px-3 py-1.5 text-[11px] font-semibold text-cyan-600">
-                  Session
-                </span>
+          <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
+            {loading ? (
+              <p className="py-10 text-center text-sm text-slate-500">
+                Loading messages...
+              </p>
+            ) : messages.length === 0 ? (
+              <div className="py-10 text-center">
+                <MessageSquare className="mx-auto mb-3 text-slate-300" size={34} />
+                <p className="font-medium text-slate-700">
+                  No messages yet
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Send a message to start the conversation.
+                </p>
               </div>
-            </div>
-          </aside>
-
-          <section className="flex min-h-[680px] min-w-0 flex-col">
-            <header className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 md:px-6">
-              <div className="flex items-center gap-3">
-                <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-bold text-white">
-                  SJ
-
-                  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
-                </div>
-
-                <div>
-                  <h1 className="text-sm font-bold text-slate-800">
-                   Rahim
-                  </h1>
-
-                  <p className="mt-0.5 text-xs text-emerald-500">
-                    Online
-                  </p>
-                </div>
-              </div>
-
-              <button className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
-                <MoreVertical size={19} />
-              </button>
-            </header>
-
-            <div className="border-b border-indigo-100 bg-gradient-to-r from-indigo-50 via-violet-50 to-cyan-50 px-5 py-4 md:px-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm">
-                  <CircleUserRound size={18} />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-indigo-500">
-                    Problem
-                  </p>
-
-                  <p className="truncate text-sm font-bold text-slate-800">
-                    Next.js authentication issue
-                  </p>
-                </div>
-
-                <span className="ml-auto hidden rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-bold text-emerald-600 sm:block">
-                  In Progress
-                </span>
-              </div>
-            </div>
-
-            <div className="flex-1 space-y-5 overflow-y-auto bg-[#f8f9fc] p-5 md:p-7">
-              <div className="flex justify-center">
-                <span className="rounded-full bg-white px-3 py-1 text-[10px] font-medium text-slate-400 shadow-sm">
-                  Today
-                </span>
-              </div>
-
-              {messages.map((msg) => {
-                const isSolver = msg.sender === "solver";
+            ) : (
+              messages.map((item) => {
+                const isMine = item.senderId
+                  ? item.senderId === currentId
+                  : item.sender === role;
 
                 return (
                   <div
-                    key={msg.id}
-                    className={`flex ${
-                      isSolver ? "justify-end" : "justify-start"
-                    }`}
+                    key={item.id}
+                    className={`flex ${isMine ? "justify-end" : "justify-start"}`}
                   >
-                    <div className="max-w-[82%] md:max-w-[70%]">
+                    <div className="max-w-[85%] sm:max-w-[75%]">
                       <div
-                        className={`px-4 py-3 text-sm leading-6 ${
-                          isSolver
-                            ? "rounded-2xl rounded-br-md bg-indigo-600 text-white shadow-sm"
-                            : "rounded-2xl rounded-bl-md border border-slate-200 bg-white text-slate-700 shadow-sm"
+                        className={`mb-1 flex items-center gap-2 text-xs text-slate-500 ${
+                          isMine ? "justify-end" : "justify-start"
                         }`}
                       >
-                        {msg.text}
+                        <span>{isMine ? "You" : item.name}</span>
+                        <span>{item.time}</span>
                       </div>
 
-                      <p
-                        className={`mt-1.5 text-[10px] text-slate-400 ${
-                          isSolver ? "text-right" : "text-left"
+                      <div
+                        className={`whitespace-pre-wrap break-words rounded-2xl px-4 py-3 text-sm leading-6 ${
+                          isMine
+                            ? "rounded-br-md bg-blue-600 text-white"
+                            : "rounded-bl-md bg-slate-100 text-slate-800"
                         }`}
                       >
-                        {msg.time}
-                      </p>
+                        {item.text}
+                      </div>
                     </div>
                   </div>
                 );
-              })}
+              })
+            )}
+          </div>
+
+          <form
+            onSubmit={handleSend}
+            className="border-t border-slate-200 bg-white p-4"
+          >
+            {error && (
+              <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                {error}
+              </p>
+            )}
+
+            {isSolved && (
+              <p className="mb-3 text-center text-sm text-slate-500">
+                Conversation solved. Reopen it to send a message.
+              </p>
+            )}
+
+            <div className="flex items-end gap-2">
+              <button
+                type="button"
+                disabled
+                title="File attachment will be available later"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-400"
+              >
+                <Paperclip size={19} />
+              </button>
+
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend(e);
+                  }
+                }}
+                placeholder={
+                  isSolved
+                    ? "Reopen the conversation to reply..."
+                    : "Write your message..."
+                }
+                rows={1}
+                disabled={isSolved || sending}
+                className="max-h-32 min-h-11 flex-1 resize-y rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-500 disabled:bg-slate-100"
+              />
+
+              <button
+                type="submit"
+                disabled={!message.trim() || isSolved || sending}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                aria-label="Send message"
+              >
+                <Send size={18} />
+              </button>
             </div>
 
-            <div className="border-t border-slate-200 bg-white p-4 md:p-5">
-              <div className="flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-slate-50 p-1.5 transition focus-within:border-indigo-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-indigo-50">
-                <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-indigo-600">
-                  <Paperclip size={18} />
-                </button>
+            <p className="mt-2 text-xs text-slate-400">
+              Press Enter to send. Use Shift + Enter for a new line.
+            </p>
+          </form>
+        </section>
 
-                <input
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSend();
-                    }
-                  }}
-                  placeholder="Type your solution..."
-                  className="h-10 min-w-0 flex-1 bg-transparent px-1 text-sm text-slate-700 outline-none placeholder:text-slate-400"
-                />
+        <aside className="space-y-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center gap-2">
+              <MessageSquare size={19} className="text-blue-600" />
+              <h2 className="font-bold text-slate-900">
+                Conversation Details
+              </h2>
+            </div>
 
-                <button
-                  onClick={handleSend}
-                  className="flex h-10 shrink-0 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white transition hover:bg-indigo-700"
-                >
-                  <Send size={16} />
-                  <span className="hidden sm:inline">Send</span>
-                </button>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-slate-500">Conversation ID</p>
+                <p className="mt-1 break-all text-sm font-medium">
+                  {conversationId}
+                </p>
               </div>
 
-              <p className="mt-2 px-1 text-[10px] text-slate-400">
-                Press Enter to send your message
-              </p>
-            </div>
-          </section>
-        </div>
+              <div>
+                <p className="text-xs text-slate-500">Problem Title</p>
+                <p className="mt-1 text-sm font-semibold">{problemTitle}</p>
+              </div>
 
-        <div className="mt-5 flex justify-end">
-          <button className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700">
-            <CheckCircle2 size={17} />
-            Mark Problem as Solved
-          </button>
-        </div>
-      </div>
-    </main>
+              <div>
+                <p className="text-xs text-slate-500">Seeker</p>
+                <p className="mt-1 text-sm font-medium">{seekerName}</p>
+              </div>
+
+              <div>
+                <p className="text-xs text-slate-500">Human Solver</p>
+                <p className="mt-1 text-sm font-medium">{solverName}</p>
+              </div>
+
+              <div>
+                <p className="text-xs text-slate-500">Messages</p>
+                <p className="mt-1 text-sm font-semibold">{messages.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
+              <ShieldCheck size={19} className="text-blue-600" />
+              <h2 className="font-bold text-slate-900">Problem Status</h2>
+            </div>
+
+            <p className="mb-4 text-sm leading-6 text-slate-500">
+              {isSolved
+                ? "This problem is currently marked as solved."
+                : "Mark this conversation as solved when the problem is resolved."}
+            </p>
+
+            <button
+              type="button"
+              onClick={handleSolved}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                isSolved
+                  ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+            >
+              {isSolved ? <Circle size={17} /> : <CheckCircle2 size={17} />}
+              {isSolved ? "Reopen Conversation" : "Mark as Solved"}
+            </button>
+          </div>
+
+          <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+            <p className="text-sm font-semibold text-blue-900">Backend Connected</p>
+            <p className="mt-1 text-xs leading-5 text-blue-800">
+              Messages load from the Express API and refresh automatically. They are temporary until database storage is added.
+            </p>
+          </div>
+        </aside>
+      </main>
+    </div>
   );
 }

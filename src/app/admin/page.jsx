@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AdminSidebar from "./AdminSidebar";
 import {
@@ -18,117 +19,32 @@ import {
   CircleHelp,
 } from "lucide-react";
 
-const stats = [
+const API = "http://localhost:5000/api/admin";
+
+const statConfig = [
   {
     title: "Total Users",
-    value: "1,248",
-    change: "+12.8%",
+    key: "totalUsers",
     icon: Users,
     color: "bg-blue-50 text-blue-600",
   },
   {
     title: "Total Seekers",
-    value: "682",
-    change: "+8.2%",
+    key: "totalSeekers",
     icon: UserRound,
     color: "bg-violet-50 text-violet-600",
   },
   {
     title: "Total Solvers",
-    value: "566",
-    change: "+10.5%",
+    key: "totalSolvers",
     icon: UserCheck,
     color: "bg-emerald-50 text-emerald-600",
   },
   {
     title: "Total Problems",
-    value: "324",
-    change: "+15.3%",
+    key: "totalProblems",
     icon: MessageSquare,
     color: "bg-amber-50 text-amber-600",
-  },
-];
-
-const problems = [
-  {
-    id: "#FL-1024",
-    title: "Need help with React authentication",
-    category: "Web Development",
-    seeker: "Rahim Ahmed",
-    status: "Pending",
-    date: "Oct 14, 2026",
-  },
-  {
-    id: "#FL-1023",
-    title: "Understanding database normalization",
-    category: "Database",
-    seeker: "Nusrat Jahan",
-    status: "In Progress",
-    date: "Oct 13, 2026",
-  },
-  {
-    id: "#FL-1022",
-    title: "Python programming assignment",
-    category: "Programming",
-    seeker: "Samiul Islam",
-    status: "Resolved",
-    date: "Oct 12, 2026",
-  },
-  {
-    id: "#FL-1021",
-    title: "Help with machine learning concepts",
-    category: "Artificial Intelligence",
-    seeker: "Tania Akter",
-    status: "Pending",
-    date: "Oct 11, 2026",
-  },
-];
-
-const solvers = [
-  {
-    name: "Nusrat Jahan",
-    specialty: "Web Development",
-    solved: 48,
-    rating: 4.9,
-    progress: 90,
-  },
-  {
-    name: "Mahmud Hasan",
-    specialty: "Programming",
-    solved: 36,
-    rating: 4.8,
-    progress: 75,
-  },
-  {
-    name: "Sadia Rahman",
-    specialty: "Database Management",
-    solved: 29,
-    rating: 4.7,
-    progress: 60,
-  },
-];
-
-const recentUsers = [
-  {
-    name: "Rahim Ahmed",
-    email: "rahim@example.com",
-    role: "Seeker",
-    status: "Active",
-    initials: "RA",
-  },
-  {
-    name: "Nusrat Jahan",
-    email: "nusrat@example.com",
-    role: "Solver",
-    status: "Active",
-    initials: "NJ",
-  },
-  {
-    name: "Samiul Islam",
-    email: "samiul@example.com",
-    role: "Seeker",
-    status: "Pending",
-    initials: "SI",
   },
 ];
 
@@ -136,19 +52,46 @@ function StatusBadge({ status }) {
   const styles = {
     Pending: "bg-amber-50 text-amber-700",
     "In Progress": "bg-blue-50 text-blue-700",
+    Solved: "bg-emerald-50 text-emerald-700",
     Resolved: "bg-emerald-50 text-emerald-700",
     Active: "bg-emerald-50 text-emerald-700",
+    Inactive: "bg-slate-100 text-slate-600",
   };
 
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${
         styles[status] || "bg-slate-100 text-slate-600"
       }`}
     >
-      {status}
+      {status || "Unknown"}
     </span>
   );
+}
+
+function getInitials(name = "") {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function ProgressItem({ name, specialty, solved, rating, progress }) {
@@ -156,24 +99,23 @@ function ProgressItem({ name, specialty, solved, rating, progress }) {
     <div className="space-y-3">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600">
-          {name
-            .split(" ")
-            .map((part) => part[0])
-            .join("")}
+          {getInitials(name)}
         </div>
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-slate-900">
             {name}
           </p>
-          <p className="truncate text-xs text-slate-500">{specialty}</p>
+          <p className="truncate text-xs text-slate-500">
+            {specialty || "Solver"}
+          </p>
         </div>
 
         <div className="text-right">
-          <p className="text-sm font-bold text-slate-900">{solved}</p>
+          <p className="text-sm font-bold text-slate-900">{solved ?? 0}</p>
           <p className="flex items-center justify-end gap-1 text-xs text-amber-500">
             <Star size={12} fill="currentColor" />
-            {rating}
+            {typeof rating === "number" ? rating.toFixed(1) : "—"}
           </p>
         </div>
       </div>
@@ -181,7 +123,7 @@ function ProgressItem({ name, specialty, solved, rating, progress }) {
       <div className="h-2 overflow-hidden rounded-full bg-slate-100">
         <div
           className="h-full rounded-full bg-indigo-500"
-          style={{ width: `${progress}%` }}
+          style={{ width: `${Math.min(100, Math.max(0, progress || 0))}%` }}
         />
       </div>
     </div>
@@ -199,52 +141,136 @@ function MiniStat({ icon: Icon, label, value, color }) {
 
       <div>
         <p className="text-xs text-slate-500">{label}</p>
-        <p className="text-lg font-bold text-slate-900">{value}</p>
+        <p className="text-lg font-bold text-slate-900">{value ?? 0}</p>
       </div>
     </div>
   );
 }
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [recentUsers, setRecentUsers] = useState([]);
+  const [recentProblems, setRecentProblems] = useState([]);
+  const [solvers, setSolvers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDashboard() {
+      setLoading(true);
+      setApiError("");
+
+      try {
+        const [dashboardResponse, reportsResponse] = await Promise.all([
+          fetch(`${API}/dashboard`),
+          fetch(`${API}/reports`),
+        ]);
+
+        if (!dashboardResponse.ok) {
+          throw new Error("Could not load dashboard data.");
+        }
+
+        const dashboardData = await dashboardResponse.json();
+
+        if (!dashboardData.success || !dashboardData.stats) {
+          throw new Error("Invalid dashboard API response.");
+        }
+
+        let reportData = null;
+
+        if (reportsResponse.ok) {
+          const result = await reportsResponse.json();
+
+          if (result.success) {
+            reportData = result.reports;
+          }
+        }
+
+        if (cancelled) return;
+
+        setStats(dashboardData.stats);
+        setRecentUsers(
+          Array.isArray(dashboardData.recentUsers)
+            ? dashboardData.recentUsers
+            : []
+        );
+        setRecentProblems(
+          Array.isArray(dashboardData.recentProblems)
+            ? dashboardData.recentProblems
+            : []
+        );
+        setSolvers(
+          Array.isArray(reportData?.topSolvers)
+            ? reportData.topSolvers
+            : []
+        );
+      } catch (error) {
+        if (!cancelled) {
+          setApiError(
+            error.message || "Could not connect to the backend."
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadDashboard();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <AdminSidebar />
 
-    <main className="ml-64 min-h-screen space-y-8 px-4 pt-8 sm:px-6 lg:px-8">
-       
-        {/* Dashboard Header */}
+      <main className="ml-64 min-h-screen space-y-8 px-4 pt-8 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="text-sm font-medium text-indigo-600  pb-16">
-             
-            </p>
-
-            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+            <h1 className="text-2xl pt-16 font-bold tracking-tight sm:text-3xl">
               Dashboard Overview
             </h1>
-
             <p className="mt-2 text-sm text-slate-500">
               Monitor users, problems, and platform activity.
             </p>
+
+            {apiError && (
+              <p role="alert" className="mt-3 text-sm text-rose-600">
+                {apiError}
+              </p>
+            )}
           </div>
 
-          <Link
-            href="/admin/problems"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
-          >
-            <MessageSquare size={16} />
-            Review Problems
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-100"
+            >
+              Refresh
+            </button>
+
+            <Link
+              href="/admin/problems"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+            >
+              <MessageSquare size={16} />
+              Review Problems
+            </Link>
+          </div>
         </div>
 
-        {/* Statistics */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {stats.map((stat) => {
+          {statConfig.map((stat) => {
             const Icon = stat.icon;
 
             return (
               <div
-                key={stat.title}
+                key={stat.key}
                 className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
               >
                 <div className="flex items-start justify-between">
@@ -252,9 +278,10 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-slate-500">
                       {stat.title}
                     </p>
-
                     <h2 className="mt-2 text-3xl font-bold">
-                      {stat.value}
+                      {loading
+                        ? "..."
+                        : (stats?.[stat.key] ?? 0).toLocaleString()}
                     </h2>
                   </div>
 
@@ -265,18 +292,14 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <p className="mt-4 text-xs font-semibold text-emerald-600">
-                  {stat.change}{" "}
-                  <span className="font-normal text-slate-400">
-                    Compared to last month
-                  </span>
+                <p className="mt-4 text-xs text-slate-400">
+                  {loading ? "Loading data..." : "Current platform totals"}
                 </p>
               </div>
             );
           })}
         </section>
 
-        {/* Recent Problems and Solver Performance */}
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:col-span-2">
             <div className="flex items-center justify-between border-b border-slate-100 p-5">
@@ -308,40 +331,54 @@ export default function AdminDashboard() {
                 </thead>
 
                 <tbody className="divide-y divide-slate-100">
-                  {problems.map((problem) => (
-                    <tr key={problem.id} className="hover:bg-slate-50">
-                      <td className="px-5 py-4">
-                        <p className="text-sm font-semibold">
-                          {problem.title}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-400">
-                          {problem.id} · {problem.category}
-                        </p>
-                      </td>
-
-                      <td className="px-5 py-4 text-sm text-slate-600">
-                        {problem.seeker}
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <StatusBadge status={problem.status} />
-                      </td>
-
-                      <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-500">
-                        {problem.date}
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <Link
-                          href="/admin/problems"
-                          aria-label="Manage problem"
-                          className="inline-flex rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-                        >
-                          <MoreHorizontal size={18} />
-                        </Link>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="px-5 py-10 text-center text-sm text-slate-500">
+                        Loading problems...
                       </td>
                     </tr>
-                  ))}
+                  ) : recentProblems.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-5 py-10 text-center text-sm text-slate-500">
+                        {apiError ? "Problems could not be loaded." : "No problems found."}
+                      </td>
+                    </tr>
+                  ) : (
+                    recentProblems.map((problem) => (
+                      <tr key={problem.id} className="hover:bg-slate-50">
+                        <td className="px-5 py-4">
+                          <p className="text-sm font-semibold">
+                            {problem.title}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-400">
+                            {problem.id} · {problem.technology || "General"}
+                          </p>
+                        </td>
+
+                        <td className="px-5 py-4 text-sm text-slate-600">
+                          {problem.seeker}
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <StatusBadge status={problem.status} />
+                        </td>
+
+                        <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-500">
+                          {formatDate(problem.date)}
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <Link
+                            href="/admin/problems"
+                            aria-label={`Manage ${problem.title}`}
+                            className="inline-flex rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                          >
+                            <MoreHorizontal size={18} />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -352,7 +389,7 @@ export default function AdminDashboard() {
               <div>
                 <h2 className="font-bold">Solver Performance</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Top-performing solvers
+                  Solver report data
                 </p>
               </div>
 
@@ -366,9 +403,31 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-6 p-5">
-              {solvers.map((solver) => (
-                <ProgressItem key={solver.name} {...solver} />
-              ))}
+              {loading ? (
+                <p className="text-sm text-slate-500">Loading solvers...</p>
+              ) : solvers.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No solver report data available.
+                </p>
+              ) : (
+                solvers.map((solver) => {
+                  const maxSolved = Math.max(
+                    ...solvers.map((item) => item.solved || 0),
+                    1
+                  );
+
+                  return (
+                    <ProgressItem
+                      key={solver.name}
+                      name={solver.name}
+                      specialty={solver.role}
+                      solved={solver.solved}
+                      rating={solver.rating}
+                      progress={((solver.solved || 0) / maxSolved) * 100}
+                    />
+                  );
+                })
+              )}
             </div>
 
             <div className="border-t border-slate-100 p-4">
@@ -382,7 +441,6 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Recent Users and Platform Overview */}
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:col-span-2">
             <div className="flex items-center justify-between border-b border-slate-100 p-5">
@@ -402,41 +460,51 @@ export default function AdminDashboard() {
             </div>
 
             <div className="divide-y divide-slate-100">
-              {recentUsers.map((user) => (
-                <div
-                  key={user.email}
-                  className="flex flex-wrap items-center gap-3 px-5 py-4"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600">
-                    {user.initials}
+              {loading ? (
+                <p className="px-5 py-10 text-center text-sm text-slate-500">
+                  Loading users...
+                </p>
+              ) : recentUsers.length === 0 ? (
+                <p className="px-5 py-10 text-center text-sm text-slate-500">
+                  {apiError ? "Users could not be loaded." : "No users found."}
+                </p>
+              ) : (
+                recentUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex flex-wrap items-center gap-3 px-5 py-4"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600">
+                      {getInitials(user.name)}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">
+                        {user.name}
+                      </p>
+                      <p className="truncate text-xs text-slate-500">
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+                        {user.role}
+                      </span>
+
+                      <StatusBadge status={user.status} />
+
+                      <Link
+                        href="/admin/users"
+                        aria-label={`Manage ${user.name}`}
+                        className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                      >
+                        <ChevronRight size={18} />
+                      </Link>
+                    </div>
                   </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">
-                      {user.name}
-                    </p>
-                    <p className="truncate text-xs text-slate-500">
-                      {user.email}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
-                      {user.role}
-                    </span>
-
-                    <StatusBadge status={user.status} />
-
-                    <Link
-                      href="/admin/users"
-                      aria-label={`Manage ${user.name}`}
-                      className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
-                    >
-                      <ChevronRight size={18} />
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             <div className="border-t border-slate-100 p-4">
@@ -453,28 +521,28 @@ export default function AdminDashboard() {
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="font-bold">Platform Overview</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Current platform activity
+                Current problem activity
               </p>
 
               <div className="mt-4 space-y-4">
                 <MiniStat
                   icon={CheckCircle2}
-                  label="Resolved Problems"
-                  value="218"
+                  label="Solved Problems"
+                  value={stats?.solvedProblems}
                   color="bg-emerald-50 text-emerald-600"
                 />
 
                 <MiniStat
                   icon={Clock3}
                   label="Pending Problems"
-                  value="42"
+                  value={stats?.pendingProblems}
                   color="bg-amber-50 text-amber-600"
                 />
 
                 <MiniStat
                   icon={AlertCircle}
-                  label="Reported Problems"
-                  value="12"
+                  label="In Progress"
+                  value={stats?.inProgressProblems}
                   color="bg-rose-50 text-rose-600"
                 />
               </div>
@@ -533,7 +601,6 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Dashboard Footer */}
         <footer className="flex flex-col items-center justify-between gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row">
           <p>© 2026 FaceLink. Admin Dashboard.</p>
 
@@ -541,7 +608,6 @@ export default function AdminDashboard() {
             <Link href="/admin/settings" className="hover:text-slate-600">
               Settings
             </Link>
-
             <Link href="/admin/reports" className="hover:text-slate-600">
               Reports
             </Link>

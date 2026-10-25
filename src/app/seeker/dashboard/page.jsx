@@ -12,7 +12,6 @@ import {
   Star,
   UserRound,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 export default function SeekerDashboard() {
   const [markingProblem, setMarkingProblem] = useState(null);
@@ -56,8 +55,6 @@ export default function SeekerDashboard() {
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
-    
-
       <div className="mx-auto flex max-w-[1500px]">
         <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col">
           <nav className="flex-1 px-4 py-7">
@@ -85,8 +82,6 @@ export default function SeekerDashboard() {
                 </svg>
                 Overview
               </Link>
-
-              
 
               <Link
                 href="/seeker/chat"
@@ -139,7 +134,6 @@ export default function SeekerDashboard() {
                 <p className="truncate text-xs font-bold text-slate-700">
                   Arpita Rahman
                 </p>
-
                 <p className="text-[10px] text-slate-400">
                   Problem Seeker
                 </p>
@@ -192,10 +186,7 @@ export default function SeekerDashboard() {
 
           <div className="px-5 py-7 md:px-8">
             <section className="grid gap-4 md:grid-cols-3">
-              <Link
-                href="/seeker/problems"
-                className="relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-600 to-violet-600 p-6 text-white shadow-sm transition hover:-translate-y-1"
-              >
+              <div className="relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-600 to-violet-600 p-6 text-white shadow-sm">
                 <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10" />
 
                 <p className="text-xs font-semibold text-indigo-100">
@@ -213,12 +204,9 @@ export default function SeekerDashboard() {
                 <p className="mt-2 text-[11px] text-indigo-100">
                   Total problems you've shared
                 </p>
-              </Link>
+              </div>
 
-              <Link
-                href="/seeker/problems"
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              >
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-slate-400">
                     Problems Solved
@@ -229,19 +217,14 @@ export default function SeekerDashboard() {
                   </span>
                 </div>
 
-                <p className="mt-4 text-4xl font-bold text-slate-800">
-                  15
-                </p>
+                <p className="mt-4 text-4xl font-bold text-slate-800">15</p>
 
                 <p className="mt-2 text-[11px] text-emerald-500">
                   Successfully completed
                 </p>
-              </Link>
+              </div>
 
-              <Link
-                href="/seeker/problems"
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              >
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-slate-400">
                     Active Problems
@@ -252,14 +235,12 @@ export default function SeekerDashboard() {
                   </span>
                 </div>
 
-                <p className="mt-4 text-4xl font-bold text-slate-800">
-                  3
-                </p>
+                <p className="mt-4 text-4xl font-bold text-slate-800">3</p>
 
                 <p className="mt-2 text-[11px] text-amber-500">
                   Currently being discussed
                 </p>
-              </Link>
+              </div>
             </section>
 
             <section className="mt-7">
@@ -374,32 +355,28 @@ export default function SeekerDashboard() {
                             {problem.status}
                           </span>
 
-                          {problem.status === "In Progress" ? (
+                          {problem.status === "In Progress" && (
                             <Link
                               href="/seeker/chat"
                               className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
                             >
                               Open Chat
                             </Link>
-                          ) : problem.type === "Human Solver" ? (
-                            <button
-                              onClick={() => setMarkingProblem(problem)}
-                              className={`rounded-lg px-4 py-2 text-xs font-bold transition ${
-                                mark
-                                  ? "border border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
-                                  : "bg-indigo-600 text-white hover:bg-indigo-700"
-                              }`}
-                            >
-                              {mark ? "Change Rating" : "Rate Solution"}
-                            </button>
-                          ) : (
-                            <Link
-                              href="/seeker/ai"
-                              className="rounded-lg border border-violet-100 bg-violet-50 px-4 py-2 text-xs font-bold text-violet-600 transition hover:bg-violet-100"
-                            >
-                              View AI Solution
-                            </Link>
                           )}
+
+                          {problem.status === "Solved" &&
+                            problem.type === "Human Solver" && (
+                              <button
+                                onClick={() => setMarkingProblem(problem)}
+                                className={`rounded-lg px-4 py-2 text-xs font-bold transition ${
+                                  mark
+                                    ? "border border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                                }`}
+                              >
+                                {mark ? "Change Rating" : "Rate Solution"}
+                              </button>
+                            )}
                         </div>
                       </div>
 

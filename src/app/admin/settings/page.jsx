@@ -1,273 +1,519 @@
 
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  ArrowLeft,
+  UserRound,
+  Bell,
+  ShieldCheck,
+  Settings2,
+  Save,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  Globe,
+  LockKeyhole,
+} from "lucide-react";
 
-export default function AdminSettingsPage() {
-  const [profile, setProfile] = useState({
+const API = "http://localhost:5000/api/admin/settings";
+
+const defaultSettings = {
+  profile: {
     name: "Admin User",
     email: "admin@facelink.com",
     role: "Super Admin",
-  });
-
-  const [notifications, setNotifications] = useState({
+  },
+  notifications: {
     newUsers: true,
     newProblems: true,
     reports: false,
-  });
-
-  const [security, setSecurity] = useState({
+  },
+  security: {
     twoFactor: false,
     loginAlerts: true,
-  });
+  },
+  platform: {
+    siteName: "FaceLink",
+    maintenanceMode: false,
+    allowRegistration: true,
+  },
+};
 
+export default function AdminSettingsPage() {
+  const [settings, setSettings] = useState(defaultSettings);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [loaded, setLoaded] = useState(false);
 
-  const handleProfileChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+  const loadSettings = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(API, { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to load settings.");
+      }
+
+      const saved = data.settings || data.data || {};
+
+      setSettings({
+        profile: {
+          ...defaultSettings.profile,
+          ...(saved.profile || {}),
+        },
+        notifications: {
+          ...defaultSettings.notifications,
+          ...(saved.notifications || {}),
+        },
+        security: {
+          ...defaultSettings.security,
+          ...(saved.security || {}),
+        },
+        platform: {
+          ...defaultSettings.platform,
+          ...(saved.platform || {}),
+        },
+      });
+
+      setLoaded(true);
+    } catch (err) {
+      setError(err.message || "Could not connect to the backend.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  const updateSection = (section, field, value) => {
+    setSettings((current) => ({
+      ...current,
+      [section]: {
+        ...current[section],
+        [field]: value,
+      },
+    }));
+
+    setMessage("");
   };
 
-  const handleSave = () => {
-    setMessage("Settings saved successfully! (Demo only)");
-    setTimeout(() => setMessage(""), 3000);
+  const saveSettings = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(API, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(settings),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to save settings.");
+      }
+
+      const saved = data.settings || data.data || settings;
+
+      setSettings({
+        profile: {
+          ...defaultSettings.profile,
+          ...(saved.profile || {}),
+        },
+        notifications: {
+          ...defaultSettings.notifications,
+          ...(saved.notifications || {}),
+        },
+        security: {
+          ...defaultSettings.security,
+          ...(saved.security || {}),
+        },
+        platform: {
+          ...defaultSettings.platform,
+          ...(saved.platform || {}),
+        },
+      });
+
+      setMessage("Settings saved successfully.");
+    } catch (err) {
+      setError(err.message || "Could not save settings.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="text-sm font-medium text-slate-500">
+          Loading settings...
+        </p>
+      </main>
+    );
+  }
+
+  if (!loaded && error) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <AlertCircle className="mx-auto mb-3 text-red-500" size={30} />
+          <p className="font-semibold text-red-600">{error}</p>
+          <button
+            type="button"
+            onClick={loadSettings}
+            className="mt-5 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <header className="border-b border-slate-200 bg-white px-4 py-5 sm:px-6 lg:px-10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div>
             <Link
               href="/admin"
-              className="mb-3 inline-block text-sm text-blue-600 hover:underline"
+              className="mb-3 inline-flex items-center gap-2 text-xs font-semibold text-slate-500 transition hover:text-indigo-600"
             >
-              ← Back to Dashboard
+              <ArrowLeft size={15} />
+              Back to Dashboard
             </Link>
 
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-xl pt-16 font-bold sm:text-2xl">
               Admin Settings
             </h1>
-            <p className="mt-2 text-gray-500">
-              Manage your profile, notifications, and security preferences.
+
+            <p className="mt-1 text-sm text-slate-500">
+              Manage your account, notifications, security and platform.
             </p>
           </div>
 
-          <div className="rounded-xl bg-white px-4 py-3 shadow-sm">
-            <p className="text-sm text-gray-500">Account Role</p>
-            <p className="font-semibold text-purple-600">{profile.role}</p>
+          <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white sm:flex">
+            <Settings2 size={22} />
           </div>
         </div>
+      </header>
+
+      <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6 lg:p-8">
+        {error && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+            {error}
+          </div>
+        )}
 
         {message && (
-          <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-green-700">
+          <div
+            role="status"
+            className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
+          >
+            <CheckCircle2 size={18} />
             {message}
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Profile Settings */}
-          <section className="rounded-2xl bg-white p-6 shadow-sm lg:col-span-2">
-            <div className="mb-6 border-b pb-4">
-              <h2 className="text-xl font-bold text-gray-800">
-                Profile Information
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Update your admin account information.
-              </p>
-            </div>
+        <form onSubmit={saveSettings} className="space-y-6">
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <SectionHeader
+              icon={UserRound}
+              title="Profile Information"
+              description="Manage the administrator account information."
+            />
 
-            <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
+            <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+              <Field label="Full Name">
                 <input
-                  name="name"
-                  value={profile.name}
-                  onChange={handleProfileChange}
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  placeholder="Enter your name"
+                  type="text"
+                  value={settings.profile.name}
+                  onChange={(event) =>
+                    updateSection("profile", "name", event.target.value)
+                  }
+                  required
+                  maxLength={100}
+                  className="settings-input"
+                  placeholder="Enter full name"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
+              <Field label="Email Address">
                 <input
-                  name="email"
                   type="email"
-                  value={profile.email}
-                  onChange={handleProfileChange}
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  placeholder="Enter your email"
+                  value={settings.profile.email}
+                  onChange={(event) =>
+                    updateSection("profile", "email", event.target.value)
+                  }
+                  required
+                  maxLength={150}
+                  className="settings-input"
+                  placeholder="Enter email address"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Account Role
-                </label>
+              <Field label="Administrator Role">
                 <input
-                  value={profile.role}
+                  type="text"
+                  value={settings.profile.role}
                   readOnly
-                  className="w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-500"
+                  className="settings-input cursor-not-allowed bg-slate-50 text-slate-500"
                 />
-              </div>
+              </Field>
             </div>
-
-            <button
-              onClick={handleSave}
-              className="mt-6 rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
-            >
-              Save Profile
-            </button>
           </section>
 
-          {/* Account Summary */}
-          <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-800">Account</h2>
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <SectionHeader
+              icon={Bell}
+              title="Notification Preferences"
+              description="Choose which platform events you want to receive notifications about."
+            />
 
-            <div className="mt-6 flex flex-col items-center rounded-xl bg-blue-50 p-6">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-3xl font-bold text-white">
-                {profile.name.charAt(0).toUpperCase() || "A"}
-              </div>
+            <div className="divide-y divide-slate-100 px-5 sm:px-6">
+              <ToggleRow
+                title="New User Registrations"
+                description="Receive notifications when a new user registers."
+                checked={settings.notifications.newUsers}
+                onChange={(value) =>
+                  updateSection("notifications", "newUsers", value)
+                }
+              />
 
-              <h3 className="mt-4 text-lg font-semibold text-gray-800">
-                {profile.name || "Admin User"}
-              </h3>
-              <p className="mt-1 break-all text-center text-sm text-gray-500">
-                {profile.email}
+              <ToggleRow
+                title="New Problem Submissions"
+                description="Receive notifications when users submit problems."
+                checked={settings.notifications.newProblems}
+                onChange={(value) =>
+                  updateSection("notifications", "newProblems", value)
+                }
+              />
+
+              <ToggleRow
+                title="Reports and Analytics"
+                description="Receive periodic report notifications."
+                checked={settings.notifications.reports}
+                onChange={(value) =>
+                  updateSection("notifications", "reports", value)
+                }
+              />
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <SectionHeader
+              icon={ShieldCheck}
+              title="Security Settings"
+              description="Configure security-related preferences for the platform."
+            />
+
+            <div className="divide-y divide-slate-100 px-5 sm:px-6">
+              <ToggleRow
+                title="Two-Factor Authentication"
+                description="Preference for requiring an additional verification step."
+                checked={settings.security.twoFactor}
+                onChange={(value) =>
+                  updateSection("security", "twoFactor", value)
+                }
+              />
+
+              <ToggleRow
+                title="Login Alerts"
+                description="Preference for alerts about account login activity."
+                checked={settings.security.loginAlerts}
+                onChange={(value) =>
+                  updateSection("security", "loginAlerts", value)
+                }
+              />
+            </div>
+
+            <div className="mx-5 mb-5 flex items-start gap-3 rounded-xl bg-amber-50 p-4 sm:mx-6">
+              <LockKeyhole
+                size={18}
+                className="mt-0.5 shrink-0 text-amber-600"
+              />
+              <p className="text-xs leading-5 text-amber-800">
+                These options currently save preferences only. Actual
+                two-factor authentication and login alert delivery require
+                authentication and notification services.
               </p>
-
-              <span className="mt-3 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
-                {profile.role}
-              </span>
-            </div>
-
-            <div className="mt-5 rounded-lg border border-gray-100 p-4">
-              <p className="text-sm text-gray-500">Account Status</p>
-              <p className="mt-1 font-semibold text-green-600">Active</p>
             </div>
           </section>
 
-          {/* Notification Settings */}
-          <section className="rounded-2xl bg-white p-6 shadow-sm lg:col-span-2">
-            <h2 className="text-xl font-bold text-gray-800">
-              Notification Preferences
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Choose which updates you want to receive.
-            </p>
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <SectionHeader
+              icon={Globe}
+              title="Platform Settings"
+              description="Manage general FaceLink platform preferences."
+            />
 
-            <div className="mt-6 space-y-5">
-              {[
-                {
-                  key: "newUsers",
-                  title: "New User Registration",
-                  description: "Get notified when a new user joins FaceLink.",
-                },
-                {
-                  key: "newProblems",
-                  title: "New Problems",
-                  description: "Get notified when seekers post new problems.",
-                },
-                {
-                  key: "reports",
-                  title: "System Reports",
-                  description: "Receive platform analytics and report updates.",
-                },
-              ].map((item) => (
-                <label
-                  key={item.key}
-                  className="flex cursor-pointer items-center justify-between gap-4"
-                >
-                  <div>
-                    <p className="font-medium text-gray-800">{item.title}</p>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {item.description}
-                    </p>
-                  </div>
+            <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+              <Field label="Platform Name">
+                <input
+                  type="text"
+                  value={settings.platform.siteName}
+                  onChange={(event) =>
+                    updateSection("platform", "siteName", event.target.value)
+                  }
+                  required
+                  maxLength={100}
+                  className="settings-input"
+                  placeholder="FaceLink"
+                />
+              </Field>
 
-                  <input
-                    type="checkbox"
-                    checked={notifications[item.key]}
-                    onChange={() =>
-                      setNotifications({
-                        ...notifications,
-                        [item.key]: !notifications[item.key],
-                      })
-                    }
-                    className="h-5 w-5 accent-blue-600"
-                  />
-                </label>
-              ))}
+              <div className="hidden sm:block" />
+
+              <ToggleRow
+                title="Maintenance Mode"
+                description="Preference to temporarily restrict normal platform access."
+                checked={settings.platform.maintenanceMode}
+                onChange={(value) =>
+                  updateSection("platform", "maintenanceMode", value)
+                }
+              />
+
+              <ToggleRow
+                title="Allow Registration"
+                description="Allow new users to register on the platform."
+                checked={settings.platform.allowRegistration}
+                onChange={(value) =>
+                  updateSection("platform", "allowRegistration", value)
+                }
+              />
             </div>
+
+            <div className="mx-5 mb-5 rounded-xl bg-slate-50 p-4 sm:mx-6">
+              <p className="text-xs leading-5 text-slate-500">
+                Maintenance Mode and Allow Registration save their settings
+                to the backend. They will only affect actual user access once
+                the corresponding registration and access-control routes use
+                these settings.
+              </p>
+            </div>
+          </section>
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={loadSettings}
+              disabled={saving || loading}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold transition hover:bg-slate-50 disabled:opacity-50"
+            >
+              <RefreshCw size={16} />
+              Reload Settings
+            </button>
 
             <button
-              onClick={handleSave}
-              className="mt-6 rounded-lg bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700"
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Save Notifications
+              {saving ? (
+                <RefreshCw size={16} className="animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              {saving ? "Saving..." : "Save Changes"}
             </button>
-          </section>
-
-          {/* Security Settings */}
-          <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-800">
-              Security Settings
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage your account security preferences.
-            </p>
-
-            <div className="mt-6 space-y-6">
-              {[
-                {
-                  key: "twoFactor",
-                  title: "Two-Factor Authentication",
-                  description: "Add an extra layer of account security.",
-                },
-                {
-                  key: "loginAlerts",
-                  title: "Login Alerts",
-                  description: "Get alerts about account sign-ins.",
-                },
-              ].map((item) => (
-                <label key={item.key} className="flex gap-3">
-                  <input
-                    type="checkbox"
-                    checked={security[item.key]}
-                    onChange={() =>
-                      setSecurity({
-                        ...security,
-                        [item.key]: !security[item.key],
-                      })
-                    }
-                    className="mt-1 h-5 w-5 accent-blue-600"
-                  />
-
-                  <div>
-                    <p className="font-medium text-gray-800">{item.title}</p>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {item.description}
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
-
-            <button
-              onClick={handleSave}
-              className="mt-6 w-full rounded-lg bg-gray-800 px-4 py-3 font-medium text-white hover:bg-gray-900"
-            >
-              Save Security
-            </button>
-          </section>
-        </div>
+          </div>
+        </form>
       </div>
+
+      <style jsx global>{`
+        .settings-input {
+          width: 100%;
+          height: 44px;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 0 12px;
+          font-size: 14px;
+          color: #0f172a;
+          outline: none;
+          background: white;
+        }
+
+        .settings-input:focus {
+          border-color: #818cf8;
+          box-shadow: 0 0 0 3px rgb(99 102 241 / 10%);
+        }
+      `}</style>
+    </main>
+  );
+}
+
+function SectionHeader({ icon: Icon, title, description }) {
+  return (
+    <div className="flex items-start gap-3 border-b border-slate-100 p-5 sm:p-6">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+        <Icon size={20} />
+      </div>
+      <div>
+        <h2 className="font-bold">{title}</h2>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-slate-700">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function ToggleRow({ title, description, checked, onChange }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-5">
+      <div>
+        <p className="text-sm font-semibold text-slate-800">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          {description}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={title}
+        onClick={() => onChange(!checked)}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+          checked ? "bg-indigo-600" : "bg-slate-300"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+            checked ? "left-[22px]" : "left-0.5"
+          }`}
+        />
+      </button>
     </div>
   );
 }
